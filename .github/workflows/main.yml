@@ -17,7 +17,7 @@ jobs:
           submodules: recursive
 
       - name: Prepare Theos
-        uses: und3fined/theos-action@main # Randomblock1/theos-action@v1
+        uses: iosrouter/theos-action@main # Randomblock1/theos-action@v1
 
       - name: Build package
         run: |
