@@ -1,30 +1,38 @@
-name: Build deb with rootless
+name: Build CI
 
 on:
   push:
-    #tags:
-    #  - 'v*'
-
-    #branches: [ master ]
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: self-hosted
-
+    runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@main
+
+      - name: Checkout theos/theos
+        uses: actions/checkout@main
         with:
+          repository: theos/theos
+          ref: master
           submodules: recursive
+          path: theos
 
-      - name: Prepare Theos
-        uses: und3fined/theos-action@main # Randomblock1/theos-act2ion@v1
-
-      - name: Build package
-        run: |
-          rm -f packages/*
-          make package FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless
-      - name: Publish artifact
-        uses: actions/upload-artifact@v2
+      - name: Checkout theos/sdks
+        uses: actions/checkout@main
         with:
-          name: com.shiftcmdk.autoalerts
-          path: ${{ github.workspace }}/packages/*.deb
+          repository: theos/sdks
+          sparse-checkout: iPhoneOS14.5.sdk
+          path: theos/sdks
+
+      - name: Build Package
+        run: |
+          brew install make xz ldid
+          export THEOS=theos
+          gmake clean package FINALPACKAGE=1
+          gmake clean package FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless
+
+      - name: Upload a Build Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          path: packages/*.deb
